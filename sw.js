@@ -75,31 +75,11 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-
-self.addEventListener('push', async event => {
-    const data = event.data.json();
-    console.log('Service Worker: Notificación push recibida', data);
-
-    const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
-
-    let isPWAActive = false;
-    allClients.forEach(client => {
-        if (client.visibilityState === 'visible') {
-            isPWAActive = true;
-        }
-    });
-
-    if (!isPWAActive) {
-        const options = {
-            body: data.body,
-            icon: 'icon.png',
-            badge: 'badge.png'
-        };
-
-        event.waitUntil(
-            self.registration.showNotification(data.title, options)
-        );
-    } else {
-        console.log('Notificación ignorada porque la PWA está en primer plano.');
+self.addEventListener('message', event => {
+    if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+        self.registration.showNotification("La Taverna del café te invita a visitarnos", {
+            body: "¿Sabias que una buena lectura va acompañada de una buena bebida relajante? Descubrelo",
+            icon: "./img/icono1.png"
+        });
     }
 });
