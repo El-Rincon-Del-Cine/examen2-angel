@@ -37,7 +37,9 @@ self.addEventListener('install', (event) => {
                     './img/panecillos.jpg',
                     './img/personal.jpg',
                     './img/preparando.jpg',
-                    './img/snacks.jpg'                              
+                    './img/snacks.jpg',
+                    '/app.js',  
+                    '/sw.js'
                 ]);
             })
        );
