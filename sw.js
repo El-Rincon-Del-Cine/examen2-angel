@@ -2,7 +2,7 @@
 self.addEventListener('install', (event) => {
     console.log('Service Worker: Instalado');
     event.waitUntil(
-        caches.open('Icecream-Store-PWA')
+        caches.open('coffee')
             .then((cache) => {
                 return cache.addAll([
                     './',
@@ -37,23 +37,22 @@ self.addEventListener('install', (event) => {
                     './img/panecillos.jpg',
                     './img/personal.jpg',
                     './img/preparando.jpg',
-                    './img/snacks.jpg'
-                                        
+                    './img/snacks.jpg'                              
                 ]);
             })
        );
 });
 
 //metodo para activar el sw y elimina las cache antiguas
-self.addEventListener('activate', function(e) {
+self.addEventListener('activate', (event) => {
+    const cacheWhitelist = ['coffee'];
     console.log('Service Worker: Activado');
-    e.waitUntil(
-        caches.keys().then(function(cacheNames) {
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
             return Promise.all(
-                cacheNames.map(function(thisCacheName) {
-                    if (thisCacheName !== CACHE_NAME) {
-                        console.log('Service Worker: Cache viejo eliminado', thisCacheName);
-                        return caches.delete(thisCacheName);
+                cacheNames.map((cacheName) => {
+                    if (cacheWhitelist.indexOf(cacheName) === -1) {
+                        return caches.delete(cacheName);
                     }
                 })
             );
@@ -61,27 +60,21 @@ self.addEventListener('activate', function(e) {
     );
 });
 
-//busca la cache donde se encuentra los archivos
-self.addEventListener('fetch', function(e) {
-    console.log('Service Worker: Fetching', e.request.url);
-
-    e.respondWith(
-        caches.match(e.request).then(function(response) {
-            if (response) {
-                console.log('Cache encontrada', e.request.url);
-                return response;
-            }
-            return fetch(e.request).then(function(networkResponse) {
-                return caches.open(CACHE_NAME).then(function(cache) {
-                    cache.put(e.request, networkResponse.clone());
-                    return networkResponse;
-                });
-            }).catch(function(err) {
-                console.log('Error al hacer fetch', err);
-            });
-        })
+//busca en la cache donde se encuentran los archivos
+self.addEventListener('fetch', (event) => {
+    console.log('Service Worker: Fetch solicitado para', event.request.url);
+    event.respondWith(
+        caches.match(event.request)
+            .then((response) => {
+                if (response) {
+                    return response;
+                }
+                return fetch(event.request);
+            })
+            .catch((error) => console.error('Error en la solicitud fetch', error))
     );
 });
+
 
 self.addEventListener('push', async event => {
     const data = event.data.json();
